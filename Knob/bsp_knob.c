@@ -3,7 +3,7 @@
 #include "usart_app.h"
 
 extern u8 ATT_BinSemaphore;
-//±äÁ¿¶¨Òå
+//å˜é‡å®šä¹‰
 struct
 {
 	u8 old_att_value;
@@ -20,13 +20,12 @@ static void bsp_DetectKey(uint8_t i);
 
 /*
 *********************************************************************************************************
-*	º¯ Êý Ãû: IsKeyDownX
-*	¹¦ÄÜËµÃ÷: ÅÐ¶Ï°´¼üÊÇ·ñ°´ÏÂ
-*	ÐÎ    ²Î: ÎÞ
-*	·µ »Ø Öµ: ·µ»ØÖµ1 ±íÊ¾°´ÏÂ£¬0±íÊ¾Î´°´ÏÂ
+*	å‡½ æ•° å: IsKeyDownX
+*	åŠŸèƒ½è¯´æ˜Ž: åˆ¤æ–­æŒ‰é”®æ˜¯å¦æŒ‰ä¸‹
+*	å½¢    å‚: æ— 
+*	è¿” å›ž å€¼: è¿”å›žå€¼1 è¡¨ç¤ºæŒ‰ä¸‹ï¼Œ0è¡¨ç¤ºæœªæŒ‰ä¸‹
 *********************************************************************************************************
 */
-static u8 GetKnobScale_ATT(void) {return (((GPIOC->IDR & GPIO_Pin_1)) + ((GPIOC->IDR & GPIO_Pin_0)));}  
 
 static void bsp_InitKnobVar(void)
 {
@@ -50,16 +49,16 @@ static void bsp_InitKnobHard(void)
  	NVIC_InitTypeDef NVIC_InitStructure;
    	GPIO_InitTypeDef  GPIO_InitStructure;
     
- 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	 //Ê¹ÄÜE¶Ë¿ÚÊ±ÖÓ
+ 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	 //ä½¿èƒ½Eç«¯å£æ—¶é’Ÿ
 	
    	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;	 			//  RES
  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 		
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		//ËÙ¶È50MHz
- 	GPIO_Init(GPIOC, &GPIO_InitStructure);	  				//³õÊ¼»¯PC6
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		//é€Ÿåº¦50MHz
+ 	GPIO_Init(GPIOC, &GPIO_InitStructure);	  				//åˆå§‹åŒ–PC6
 
-  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);	//Ê¹ÄÜ¸´ÓÃ¹¦ÄÜÊ±ÖÓ
+  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);	//ä½¿èƒ½å¤ç”¨åŠŸèƒ½æ—¶é’Ÿ
 
-    //GPIOA.7 ÖÐ¶ÏÏßÒÔ¼°ÖÐ¶Ï³õÊ¼»¯ÅäÖÃ   ÉÏÉýÑØ´¥·¢
+    //GPIOA.7 ä¸­æ–­çº¿ä»¥åŠä¸­æ–­åˆå§‹åŒ–é…ç½®   ä¸Šå‡æ²¿è§¦å‘
   	GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource0);
     GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource1);
     
@@ -67,33 +66,33 @@ static void bsp_InitKnobHard(void)
   	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
   	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
   	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-  	EXTI_Init(&EXTI_InitStructure);	 	//¸ù¾ÝEXTI_InitStructÖÐÖ¸¶¨µÄ²ÎÊý³õÊ¼»¯ÍâÉèEXTI¼Ä´æÆ÷
+  	EXTI_Init(&EXTI_InitStructure);	 	//æ ¹æ®EXTI_InitStructä¸­æŒ‡å®šçš„å‚æ•°åˆå§‹åŒ–å¤–è®¾EXTIå¯„å­˜å™¨
 
   	EXTI_InitStructure.EXTI_Line=EXTI_Line1;	//KEY
   	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
   	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
   	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-  	EXTI_Init(&EXTI_InitStructure);	 	//¸ù¾ÝEXTI_InitStructÖÐÖ¸¶¨µÄ²ÎÊý³õÊ¼»¯ÍâÉèEXTI¼Ä´æÆ÷
+  	EXTI_Init(&EXTI_InitStructure);	 	//æ ¹æ®EXTI_InitStructä¸­æŒ‡å®šçš„å‚æ•°åˆå§‹åŒ–å¤–è®¾EXTIå¯„å­˜å™¨
 
-  	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;			//Ê¹ÄÜ°´¼üWK_UPËùÔÚµÄÍâ²¿ÖÐ¶ÏÍ¨µÀ
-  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;	//ÇÀÕ¼ÓÅÏÈ¼¶5£¬ 
-  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;					//×ÓÓÅÏÈ¼¶0
-  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//Ê¹ÄÜÍâ²¿ÖÐ¶ÏÍ¨µÀ
+  	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;			//ä½¿èƒ½æŒ‰é”®WK_UPæ‰€åœ¨çš„å¤–éƒ¨ä¸­æ–­é€šé“
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;	//æŠ¢å ä¼˜å…ˆçº§5ï¼Œ 
+  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;					//å­ä¼˜å…ˆçº§0
+  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//ä½¿èƒ½å¤–éƒ¨ä¸­æ–­é€šé“
   	NVIC_Init(&NVIC_InitStructure); 
     
-    NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;			//Ê¹ÄÜ°´¼üWK_UPËùÔÚµÄÍâ²¿ÖÐ¶ÏÍ¨µÀ
-  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;	//ÇÀÕ¼ÓÅÏÈ¼¶5£¬ 
-  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;					//×ÓÓÅÏÈ¼¶0
-  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//Ê¹ÄÜÍâ²¿ÖÐ¶ÏÍ¨µÀ
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;			//ä½¿èƒ½æŒ‰é”®WK_UPæ‰€åœ¨çš„å¤–éƒ¨ä¸­æ–­é€šé“
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;	//æŠ¢å ä¼˜å…ˆçº§5ï¼Œ 
+  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;					//å­ä¼˜å…ˆçº§0
+  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//ä½¿èƒ½å¤–éƒ¨ä¸­æ–­é€šé“
   	NVIC_Init(&NVIC_InitStructure); 
 }
 
-//Íâ²¿ÖÐ¶Ï0·þÎñ³ÌÐò
+//å¤–éƒ¨ä¸­æ–­0æœåŠ¡ç¨‹åº
 void EXTI0_IRQHandler(void)
 {
     if(EXTI_GetITStatus(EXTI_Line0) != RESET)
     {	 
-        EXTI_ClearITPendingBit(EXTI_Line0);  //Çå³ýLINE7ÉÏµÄÖÐ¶Ï±êÖ¾Î» 
+        EXTI_ClearITPendingBit(EXTI_Line0);  //æ¸…é™¤LINE7ä¸Šçš„ä¸­æ–­æ ‡å¿—ä½ 
         digital_knob.att_scale[digital_knob.att_write] = GPIOC->IDR&0X03;
         digital_knob.att_write++;
         if(digital_knob.att_write>=50)
@@ -103,12 +102,12 @@ void EXTI0_IRQHandler(void)
     }
 }
 
-//Íâ²¿ÖÐ¶Ï1·þÎñ³ÌÐò
+//å¤–éƒ¨ä¸­æ–­1æœåŠ¡ç¨‹åº
 void EXTI1_IRQHandler(void)
 {
     if(EXTI_GetITStatus(EXTI_Line1) != RESET)
     {
-        EXTI_ClearITPendingBit(EXTI_Line1);  //Çå³ýLINE7ÉÏµÄÖÐ¶Ï±êÖ¾Î» 
+        EXTI_ClearITPendingBit(EXTI_Line1);  //æ¸…é™¤LINE7ä¸Šçš„ä¸­æ–­æ ‡å¿—ä½ 
         digital_knob.att_scale[digital_knob.att_write] = GPIOC->IDR&0X03;
         digital_knob.att_write++;
         if(digital_knob.att_write>=50)
@@ -120,25 +119,25 @@ void EXTI1_IRQHandler(void)
 
 /*
 *********************************************************************************************************
-*	º¯ Êý Ãû: bsp_InitKey
-*	¹¦ÄÜËµÃ÷: ³õÊ¼»¯°´¼ü. ¸Ãº¯Êý±» bsp_Init() µ÷ÓÃ¡£
-*	ÐÎ    ²Î:  ÎÞ
-*	·µ »Ø Öµ: ÎÞ
+*	å‡½ æ•° å: bsp_InitKey
+*	åŠŸèƒ½è¯´æ˜Ž: åˆå§‹åŒ–æŒ‰é”®. è¯¥å‡½æ•°è¢« bsp_Init() è°ƒç”¨ã€‚
+*	å½¢    å‚:  æ— 
+*	è¿” å›ž å€¼: æ— 
 *********************************************************************************************************
 */
 void bsp_InitKnob(void)
 {
-	bsp_InitKnobVar();		/* ³õÊ¼»¯°´¼ü±äÁ¿ */
-	bsp_InitKnobHard();		/* ³õÊ¼»¯°´¼üÓ²¼þ */
+	bsp_InitKnobVar();		/* åˆå§‹åŒ–æŒ‰é”®å˜é‡ */
+	bsp_InitKnobHard();		/* åˆå§‹åŒ–æŒ‰é”®ç¡¬ä»¶ */
 }
 
 
 /*
 *********************************************************************************************************
-*	º¯ Êý Ãû: bsp_GetKey
-*	¹¦ÄÜËµÃ÷: ´Ó°´¼üFIFO»º³åÇø¶ÁÈ¡Ò»¸ö¼üÖµ²¢ÅÐ¶Ï¡£
-*	ÐÎ    ²Î:  ÎÞ
-*	·µ »Ø Öµ: 
+*	å‡½ æ•° å: bsp_GetKey
+*	åŠŸèƒ½è¯´æ˜Ž: ä»ŽæŒ‰é”®FIFOç¼“å†²åŒºè¯»å–ä¸€ä¸ªé”®å€¼å¹¶åˆ¤æ–­ã€‚
+*	å½¢    å‚:  æ— 
+*	è¿” å›ž å€¼: 
 *********************************************************************************************************
 */
 static uint8_t bsp_ATT_Knob_Deal(void)
@@ -147,8 +146,8 @@ static uint8_t bsp_ATT_Knob_Deal(void)
 
     if(digital_knob.att_read != digital_knob.att_write)
     {
-        EXTI->IMR&=~(1<<0);//ÆÁ±Îline0ÉÏµÄÖÐ¶Ï 
-        EXTI->IMR&=~(1<<1);//ÆÁ±Îline1ÉÏµÄÖÐ¶Ï 
+        EXTI->IMR&=~(1<<0);//å±è”½line0ä¸Šçš„ä¸­æ–­ 
+        EXTI->IMR&=~(1<<1);//å±è”½line1ä¸Šçš„ä¸­æ–­ 
         
         while(digital_knob.att_read != digital_knob.att_write)
         {
@@ -226,8 +225,8 @@ static uint8_t bsp_ATT_Knob_Deal(void)
             OLED_BinSemaphore=2;
         }
         
-        EXTI->IMR|=1<<0;//²»ÆÁ±Îline0ÉÏµÄÖÐ¶Ï
-        EXTI->IMR|=1<<1;//²»ÆÁ±Îline1ÉÏµÄÖÐ¶Ï 
+        EXTI->IMR|=1<<0;//ä¸å±è”½line0ä¸Šçš„ä¸­æ–­
+        EXTI->IMR|=1<<1;//ä¸å±è”½line1ä¸Šçš„ä¸­æ–­ 
     }
 }
 
